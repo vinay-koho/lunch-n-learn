@@ -7,7 +7,7 @@ section {
   background-color: #242424 !important;
 }
 
-section::before {
+/* section::before {
   position: absolute;
   content: "KOHO";
   color: #84e8fa !important;
@@ -24,7 +24,7 @@ section::before {
   background-position-y: bottom, bottom, bottom;
   filter: hue-rotate(220deg);;
   transform: rotate(-30deg);
-}
+} */
 
 section::after {
   background-image: none !important;
