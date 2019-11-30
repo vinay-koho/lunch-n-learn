@@ -1,22 +1,15 @@
 ---
 marp: true
-theme: gaia
-class: invert lead
+theme: vinay
+class: lead invert
+auto-scaling: true
 paginate: true
-style: |
-  section.code pre {
-    font-size: 1.5rem;
-  }
-  section.codes pre {
-    font-size: 1.3rem;
-  }
 ---
 # Go Concurrency
-### Part 1: Go-routines and channels
+## Part 1: Go-routines and channels
 
 ---
-
-# Concurrency Buzz words
+## Concurrency Buzz words
 - Concurrency vs parallelism
 - Atomicity
 - Dead locks
@@ -26,7 +19,7 @@ style: |
 - CSP / Process Calculus
 
 ---
-# Go Philosophy and Primitives
+## Go Philosophy and Primitives
 _Do not communicate by sharing memory but share memory by communicating_
 - Go-routines
   - Go-routines vs Threads vs Asynchronous calls
@@ -36,8 +29,7 @@ _Do not communicate by sharing memory but share memory by communicating_
   - Traditional thread safe pattern implemented by most high level languages
 
 ---
-<!-- _class: code invert -->
-# Go-routines
+## Go-routines
 - Any func running “concurrently” to other code
 - Syntax - `go <func>` or `go func() {<code>}()`
 - Go-routine and Go runtime (M:N scheduler)
@@ -53,17 +45,16 @@ func main() {
 ```
 
 ---
-# Go channels
+## Go channels
 - Similar to fifo only queue accessed by go-routines
 - Writing when full / reading when empty are blocking
 - Panics when closing a closed channel.
 - Reading form a closed channel will give you a zero value
-<img alt=golang-channels src="assets/golang-channels.jpg" width=500 style="padding-left: 200px;">
+![w:500 invert:80% drop-shadow:10px,10px,10px,rgba(0,0,0,.4)](assets/golang-channels.jpg)
 
 ---
-<!-- _class: code invert -->
-# Example 1
-```go {.line-numbers highlight=10-20}
+## Example 1
+```go
 func worker(readChan <-chan string, writeChan chan<- string) {
   // for value, ok <- readChan; ok {
   for value := range readChan {
@@ -90,8 +81,7 @@ func master(inputs ...string) {
 ```
 
 ---
-<!-- _class: codes invert -->
-# Example 2 with context
+## Example 2 with context
 ```go
 func worker(readChan <-chan string, writeChan chan<- string, done <-chan struct{}) {
   defer func() {
