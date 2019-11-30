@@ -10,9 +10,9 @@ section {
 section::before {
   position: absolute;
   content: "KOHO";
+  color: #84e8fa !important;
   text-align: right;
   margin-top: 150px;
-  color: #fff;
   text-align: center;
   top: -10%;
   left: -20%;
@@ -22,7 +22,7 @@ section::before {
   background-image: url(https://fakeimg.pl/800x10/272727/fff/?text=%20), url(https://fakeimg.pl/800x20/8F5AC9/fff/?text=%20), url(https://fakeimg.pl/800x25/aaaa09/fff/?text=%20) !important;
   background-repeat: no-repeat, no-repeat, no-repeat !important;
   background-position-y: bottom, bottom, bottom;
-
+  filter: hue-rotate(220deg);;
   transform: rotate(-30deg);
 }
 

@@ -50,7 +50,7 @@ func main() {
 - Writing when full / reading when empty are blocking
 - Panics when closing a closed channel.
 - Reading form a closed channel will give you a zero value
-![w:500 invert:80% drop-shadow:10px,10px,10px,rgba(0,0,0,.4)](assets/golang-channels.jpg)
+![w:500 invert:80% hue-rotate:270deg saturate:4.0 drop-shadow:10px,10px,10px,rgba(0,0,0,.4)](assets/golang-channels.jpg)
 
 ---
 ## Example 1
@@ -111,3 +111,6 @@ func master(inputs ...string) {
   // similar to example 1
 }
 ```
+---
+# Thank You
+## ?? Questions ??
