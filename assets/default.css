@@ -1,46 +1,83 @@
-/* @theme vinay */
+ /* @theme vinay */
 
 @import 'uncover';
 
-section {
-  font-family: Candara !important;
-  background-color: #242424 !important;
-}
-
 /* section::before {
-  position: absolute;
-  content: "KOHO";
-  color: #84e8fa !important;
-  text-align: right;
-  margin-top: 150px;
-  text-align: center;
-  top: -10%;
-  left: -20%;
-  width: 800px;
-  height: 75px;
-  z-index: -1;
-  background-image: url(https://fakeimg.pl/800x10/272727/fff/?text=%20), url(https://fakeimg.pl/800x20/8F5AC9/fff/?text=%20), url(https://fakeimg.pl/800x25/aaaa09/fff/?text=%20) !important;
-  background-repeat: no-repeat, no-repeat, no-repeat !important;
-  background-position-y: bottom, bottom, bottom;
-  filter: hue-rotate(220deg);;
-  transform: rotate(-30deg);
+ position: absolute;
+ content: "KOHO";
+ color: #84e8fa !important;
+ text-align: right;
+ margin-top: 150px;
+ text-align: center;
+ top: -10%;
+ left: -20%;
+ width: 800px;
+ height: 75px;
+ z-index: -1;
+ background-image: url(https://fakeimg.pl/800x10/272727/fff/?text=%20), url(https://fakeimg.pl/800x20/8F5AC9/fff/?text=%20), url(https://fakeimg.pl/800x25/aaaa09/fff/?text=%20) !important;
+ background-repeat: no-repeat, no-repeat, no-repeat !important;
+ background-position-y: bottom, bottom, bottom;
+ filter: hue-rotate(220deg);;
+ transform: rotate(-30deg);
 } */
+
+section {
+  font-family: "Candara" !important;
+  background-color: #222 !important;
+  padding: 100px 100px 40px 100px;
+  justify-content: center;
+  color: #eee;
+}
 
 section::after {
   background-image: none !important;
-  font-size: 32px;
+ /* color: rgb(177, 250, 250) !important; */
+  padding: 10px 15px 10px 10px;
+  font-size: 18px;
   font-weight: 900;
+  color: #666666;
+  text-shadow: none;
+}
+
+footer {
+  top: 95%;
+  text-shadow: none;
+  color: #666666;
 }
 
 section h1 {
+  padding-bottom: 100px;
   font-size: 72px;
 }
 
-section h2 {
+section h2, section h3 {
   font-size: 52px;
+  color: rgb(177, 250, 250);
 }
 
-section p,
+h2, pre {
+  padding: 5px;
+  margin: 0px auto 0px auto;
+}
+
+section > h1 + h2 {
+  top: 52%;
+}
+
+section h2 {
+  position: absolute !important;
+  top: 20px;
+  margin: auto;
+  width: 100%;
+  left: 0%;
+}
+
+section p > em {
+  color: rgb(170, 250, 206) !important;
+  text-align: justify !important;
+  width: 100% !important;
+}
+
 section ul,
 section li {
   font-family: 'Roboto' !important;
@@ -51,21 +88,18 @@ section li {
 
 section img {
   width: 100%;
-  margin-top: 30px;
-  margin-left: 300px;
+  margin: 30px auto auto auto;
 }
 
-section pre,
-section.invert pre {
+section pre {
   filter: drop-shadow(10px 10px 10px rgba(0,0,0,.4));
 }
 
 section pre,
-section.invert pre,
-section code,
-section.invert code {
+section code {
   box-shadow: none;
   font-family: "Operator Mono Lig" !important;
+  background-color: #302b2d;
   font-size: 1.1rem;
   width: 80%;
 }
@@ -74,38 +108,31 @@ section::after {
   font-weight: 800;
 }
 
-section .hljs-comment,
-section.invert .hljs-comment {
+section .hljs-comment {
   font-style: italic;
   color: #888;
 }
 
-section .hljs-keyword,
-section.invert .hljs-keyword {
+section .hljs-keyword {
   font-style: italic;
   color: rgb(193, 140, 251) !important;
 }
 
-section .hljs-title,
-section.invert .hljs-title {
+section .hljs-title {
   font-style: bold;
   color: rgb(251, 42, 157) !important;
 }
 
 section .hljs-number,
-section.invert .hljs-number,
-section .hljs-string,
-section.invert .hljs-string {
+section .hljs-string {
   color: rgb(32, 255, 136) !important;
 }
 
-section .hljs-params,
-section.invert .hljs-params {
+section .hljs-params {
   color: rgb(253, 220, 50) !important;
 }
 
-section .hljs-built_in,
-section.invert .hljs-built_in {
+section .hljs-built_in {
   color: #fdb560 !important;
 }
 

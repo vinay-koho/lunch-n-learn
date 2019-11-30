@@ -1,9 +1,8 @@
 ---
 marp: true
 theme: vinay
-class: lead invert
-auto-scaling: true
 paginate: true
+footer: "slides @ github.com/vinay-koho/lunch-n-learn"
 ---
 # Go Concurrency
 ## Part 1: Go-routines and channels
@@ -50,6 +49,7 @@ func main() {
 - Writing when full / reading when empty are blocking
 - Panics when closing a closed channel.
 - Reading form a closed channel will give you a zero value
+
 ![w:500 invert:80% hue-rotate:270deg saturate:4.0 drop-shadow:10px,10px,10px,rgba(0,0,0,.4)](assets/golang-channels.jpg)
 
 ---
