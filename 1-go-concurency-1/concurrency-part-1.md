@@ -19,7 +19,7 @@ footer: "slides @ github.com/vinay-koho/lunch-n-learn"
 
 ---
 ## Go Philosophy and Primitives
-_Do not communicate by sharing memory but share memory by communicating_
+**Do not communicate by sharing memory but share memory by communication**
 - Go-routines
   - Go-routines vs Threads vs Asynchronous calls
 - Channels (from CSP)
