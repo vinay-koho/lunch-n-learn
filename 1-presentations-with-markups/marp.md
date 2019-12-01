@@ -36,12 +36,12 @@ header: presentations with marp
   ```<!-- _class: text-small -->```
 - Use image tags with multiple filters
 ```
-![logo w:150](./assets/logo-inkscape.svg)
-![logo w:150 invert:100% saturate:100%](./assets/logo-inkscape.svg)
-![logo w:150 hue-rotate:90deg sepia:50%](./assets/logo-inkscape.svg)
-![logo w:150 grayscale:0.5 opacity:.5](./assets/logo-inkscape.svg)
+![logo w:150](./assets/logo.png)
+![logo w:150 invert:100% saturate:100%](./assets/logo.png)
+![logo w:150 hue-rotate:90deg sepia:50%](./assets/logo.png)
+![logo w:150 grayscale:0.5 opacity:.5](./assets/logo.png)
 ```
-![logo w:150](./assets/logo-inkscape.svg)![logo w:150 invert:100% saturate:100%](./assets/logo-inkscape.svg)![logo w:150 hue-rotate:90deg sepia:50%](./assets/logo-inkscape.svg)![logo w:150 grayscale:0.5 opacity:.5](./assets/logo-inkscape.svg)
+![logo w:150](./assets/logo.png)![logo w:150 invert:100% saturate:100%](./assets/logo.png)![logo w:150 hue-rotate:90deg sepia:50%](./assets/logo.png)![logo w:150 grayscale:0.5 opacity:.5](./assets/logo.png)
 
 ----
 <!-- _class: leftbg normal-code -->
