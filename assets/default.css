@@ -39,10 +39,18 @@ section::after {
   text-shadow: none;
 }
 
+header {
+  color: rgba(150, 150, 150, 0.6) !important;
+  text-shadow: none;
+  text-align: right;
+  top: 1%;
+  right: 1%;
+}
+
 footer {
   top: 95%;
   text-shadow: none;
-  color: #666666;
+  color: rgba(150, 150, 150, 0.6) !important
 }
 
 section h1 {
@@ -57,7 +65,7 @@ section h2 {
 
 h2, pre {
   padding: 5px;
-  margin: 0px auto 0px auto;
+  margin: 0px auto 10px auto;
 }
 
 section > h1 + h2 {
@@ -93,6 +101,21 @@ section img {
 
 section pre {
   filter: drop-shadow(10px 10px 10px rgba(0,0,0,.4));
+}
+
+section.normal-code code {
+  font-size: .9em;
+}
+
+section.text-small li {
+  font-size: 24px !important;
+}
+
+section.leftbg code,
+section.leftbg pre {
+  word-break: break-all;
+  word-wrap: break-word;
+  width: 80% !important;
 }
 
 section pre,

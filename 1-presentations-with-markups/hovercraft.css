@@ -1,9 +1,31 @@
-@import url(http://fonts.googleapis.com/css?family=Libre+Baskerville);
+@import url(http://fonts.googleapis.com/css?family=Libre+Baskerville|Racing+Sans+One|Satisfy);
 
 body {
+    background-color: #222;
+    color: #ccc;
     font-size: 200%;
     text-align: center;
     font-family: Libre Baskerville;
+}
+
+.z-space p {
+    text-align: center;
+}
+
+.z-space em {
+    padding-left: 280px;
+}
+
+.z-space h1,
+.z-space h2,
+.z-space p {
+    color: #ffffff;
+}
+
+.pop-text h1 {
+    font-size: 135px;
+    color: #ffffff;
+    margin: 0 -400px 0 -400px;
 }
 
 p {
@@ -11,6 +33,17 @@ p {
     margin-bottom: 0.3em;
     margin-top: 0.3em;
     text-align: left;
+}
+
+em {
+    font-family: Satisfy;
+    font-size: 142%;
+}
+
+strong {
+    font-family: Racing Sans One;
+    font-size: 127%;
+    letter-spacing: -2px;
 }
 
 pre {
@@ -23,8 +56,10 @@ h1, h2, h3, h4 {
     margin-top: 0.3em;
 }
 
-tt {
+tt, pre {
     font-size: 125;
+    font-family: "Operator Mono Lig";
+    background-color: #353039;
 }
 
 ul {
@@ -42,8 +77,8 @@ li {
 }
 
 a {
-    text-decoration: none;
-    color: black;
+    text-decoration: underline;
+    color: #ccc;
 }
 
 .hidden {
