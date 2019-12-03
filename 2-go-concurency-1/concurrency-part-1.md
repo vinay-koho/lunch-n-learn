@@ -4,6 +4,9 @@ theme: vinay
 paginate: true
 footer: "slides @ github.com/vinay-koho/lunch-n-learn"
 ---
+
+![bg left:20%](https://iso.500px.com/wp-content/uploads/2016/09/stock-photo-174103407.jpg)
+
 # Go Concurrency
 ## Part 1: Go-routines and channels
 
@@ -61,8 +64,10 @@ func worker(readChan <-chan string, writeChan chan<- string) {
     // some work
     writeChan <- "output"
   }
-  sync.Once(func() {close(writeChan)}())
+  once.Do(func() {close(writeChan)}())
 }
+
+var once = sync.Once{}
 
 func master(inputs ...string) {
   workers := 10
