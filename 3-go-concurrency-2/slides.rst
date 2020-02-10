@@ -678,29 +678,34 @@ Select Channels
 
 ----
 
-:id: last_slide
-
 :data-x: r200
 :data-y: r0
 :data-z: r700
 
-.. note::
+----
 
-  - Does feel little too complicated to use channels.
-  - Example is choosen to show all possible complications with channel.
-  - There are few cleaner ways to implement the map-reduce problem in go, but the way it is written is serve as an example and not the best way.
-  - This is very unfair for showing the usefulness in channels.
-  - Implementing the same solution, with similar functionality in any other popular language is increadibilly more hard.
-  - Channels ROCK!!!!
+:id: last_slide
+
+:data-x: r2000
+:data-y: r0
+:data-z: r0
+
+Complicated? May be not
+=======================
+
+  - There are cleaner ways to implement the map-reduce problem in go.
+  - Code is implemented this way to show frequent complications with channels.
+  - This is likely unfair for showing the usefulness of channels in go.
+  - Implementing the same solution, with similar functionality in any other popular languages is more cumbersome.
 
 ----
 
 :data-rotate-x: 0
-:data-x: 9000
+:data-x: 10000
 :data-y: 5000
 :data-z: 15000
 
-**Thats all folks!**
+**GO Channels GO!**
 ====================
 
 *Questions?*
