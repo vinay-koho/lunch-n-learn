@@ -1,0 +1,314 @@
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Go Concurrency</title><meta charset="UTF-8"></meta><meta name="generator" content="Hovercraft! 1.0 http://regebro.github.com/hovercraft"></meta><link rel="stylesheet" href="css/hovercraft.css" media="all"></link><link rel="stylesheet" href="css/impressConsole.css" media="all"></link><link rel="stylesheet" href="css/highlight.css" media="all"></link><link rel="stylesheet" href="slides.css" media="screen,projection"></link><script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        showProcessingMessages: false,
+        messageStyle: "none",
+        TeX : { extensions : ['color.js'] }
+      });
+    </script></head><body class="impress-not-supported"><div id="impress"><div class="step step-level-1" step="0" id="first_slide" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="0" data-y="0" data-z="0"><h1 id="go-concurrency-channels"><em>Go Concurrency</em> <strong>Channels!</strong></h1></div><div class="step step-level-1" step="1" data-x="2000" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-y="0" data-z="0"><h1 id="what-are-channels">What are channels</h1><ul><li>Functionally they are native thread-safe fifo queue.</li><li>Channel is a primitive type like int, string, etc.</li><li>Buffered and unbuffered channels</li><li>Highly encouraged by go.</li></ul><figure><img src="assets/golang-channels.jpg"></img></figure></div><div class="step step-level-1" step="2" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="4000" data-y="0" data-z="0"><h1 id="syntax">Syntax</h1><p>Creating a channel</p><pre class="highlight code go"><span class="c1">// var &lt;variable-name&gt; chan &lt;type&gt;
+</span><span class="kd">var</span> <span class="nx">structChan</span> <span class="kd">chan</span> <span class="kd">struct</span><span class="p">{</span><span class="nx">Foo</span> <span class="kt">int</span><span class="p">}</span> <span class="c1">// default value is nil
+// panic: close of nil channel
+</span><span class="nb">close</span><span class="p">(</span><span class="nx">structChan</span><span class="p">)</span>
+
+<span class="c1">// make(chan &lt;type&gt; [, buffer])
+</span><span class="nx">stringChan</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span>
+<span class="nx">stringChan</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="nb">close</span><span class="p">(</span><span class="nx">stringChan</span><span class="p">)</span></pre><p>Accessing channel values</p><pre class="highlight code go"><span class="c1">// writing to channel
+</span><span class="nx">stringChan</span> <span class="o">&lt;-</span> <span class="s">"test"</span>
+
+<span class="c1">// reading from channel
+</span><span class="nx">value</span> <span class="o">:=</span> <span class="o">&lt;-</span> <span class="nx">stringChan</span>
+
+<span class="c1">// iterating over channel values
+</span><span class="k">for</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">stringChan</span><span class="p">;</span> <span class="nx">ok</span><span class="p">;</span> <span class="p">{</span>
+  <span class="c1">// work with value
+</span><span class="p">}</span>
+
+<span class="k">for</span> <span class="nx">value</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">stringChan</span> <span class="p">{</span>
+  <span class="c1">// work with value
+</span><span class="p">}</span></pre></div><div class="step step-level-1" step="3" data-x="3900" data-y="-150" data-z="-600" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="4" data-x="3900" data-y="200" data-z="-600" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="5" data-x="4000" data-y="0" data-z="0" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="6" data-x="6000" data-y="0" data-z="0" id="things_to_remember" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="things-to-remember">Things to remember</h1><ul><li>Writing to a full (zero buffer) channel is blocking.<ul><li>reading from an empty channel is blocking as well.</li></ul></li><li>Channels are bi-directional by default.</li><li>Channels can be forced to a single direction by adding <tt>&lt;-</tt>.<ul><li><tt>&lt;-chan</tt> is readonly and <tt>chan&lt;-</tt> is writeonly.</li></ul></li><li>Closed channels give a zero value when read from.</li><li>Closed Channels panic when written to.</li></ul></div><div class="step step-level-1" step="7" id="word_count_initial" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="8000" data-y="0" data-z="0"><h1 id="simple-word-count-example">Simple word-count example</h1><pre class="highlight code go"><span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">re</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nx">MustCompile</span><span class="p">(</span><span class="s">`[^A-z]`</span><span class="p">)</span>
+  <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">text</span><span class="p">,</span> <span class="s">"\n"</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="s">" "</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">word</span> <span class="p">=</span> <span class="nx">re</span><span class="p">.</span><span class="nx">ReplaceAllString</span><span class="p">(</span><span class="nx">word</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+      <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="p">=</span> <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="8" data-rotate-x="-90" data-x="8000" data-y="0" data-z="-1000" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="first-attempt">First attempt</h1><pre class="highlight code go"><span class="kd">func</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">re</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nx">MustCompile</span><span class="p">(</span><span class="s">`[^A-z]`</span><span class="p">)</span>
+  <span class="k">for</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">lineChannel</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="s">" "</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">wordChannel</span> <span class="o">&lt;-</span> <span class="nx">re</span><span class="p">.</span><span class="nx">ReplaceAllString</span><span class="p">(</span><span class="nx">word</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">wordChannel</span> <span class="p">{</span>
+    <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="p">=</span> <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+  <span class="nx">workerCount</span> <span class="o">:=</span> <span class="mi">3</span>
+
+  <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">workerCount</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+    <span class="k">go</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span><span class="p">)</span>
+    <span class="k">go</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">text</span><span class="p">,</span> <span class="s">"\n"</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">lineChannel</span> <span class="o">&lt;-</span> <span class="nx">line</span>
+  <span class="p">}</span>
+
+  <span class="nb">close</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">)</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="9" data-x="7980" data-y="-500" data-z="-1200" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="10" data-x="7980" data-y="-500" data-z="-850" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="11" data-x="8000" data-y="0" data-z="-1000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="12" data-x="8000" data-y="0" data-z="-2000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="second-attempt">Second attempt</h1><pre class="highlight code go"><span class="kd">func</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="c1">// same as previous
+</span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="k">for</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">wordChannel</span> <span class="p">{</span>
+    <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="p">=</span> <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">wg</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+  <span class="nx">workerCount</span> <span class="o">:=</span> <span class="mi">3</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nx">workerCount</span><span class="p">)</span>
+
+  <span class="c1">// same as previous
+</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="13" data-x="7980" data-y="-500" data-z="-2200" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="14" data-x="7950" data-y="-550" data-z="-1900" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="15" data-x="8000" data-y="0" data-z="-2000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="16" data-x="8000" data-y="0" data-z="-3000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="third-attempt">Third attempt</h1><pre class="highlight code go"><span class="c1">// func wordGenerator
+</span>
+<span class="kd">func</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="k">for</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">wordChannel</span> <span class="p">{</span>
+    <span class="nx">mutex</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
+    <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="p">=</span> <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="nx">mutex</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">wg</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">mutex</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+  <span class="nx">workerCount</span> <span class="o">:=</span> <span class="mi">3</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nx">workerCount</span><span class="p">)</span>
+
+  <span class="c1">// same as previous
+</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="17" data-x="7850" data-y="-600" data-z="-2900" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="18" data-x="8000" data-y="0" data-z="-3000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="19" data-x="8000" data-y="0" data-z="-4000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="fourth-attempt">Fourth attempt</h1><pre class="highlight code go"><span class="c1">// func wordGenerator
+</span>
+<span class="c1">// func wordCounter
+</span>
+<span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">wg</span><span class="p">,</span> <span class="nx">owg</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{},</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">mutex</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+  <span class="nx">workerCount</span> <span class="o">:=</span> <span class="mi">3</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="nx">workerCount</span><span class="p">)</span>
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="nx">workerCount</span><span class="p">)</span>
+
+  <span class="c1">// same as previous
+</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="20" data-x="7980" data-y="-500" data-z="-4080" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="21" data-x="8000" data-y="0" data-z="-4000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="22" data-rotate-x="0" data-x="8000" data-y="0" data-z="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1 perfect" step="23" data-x="10000" data-y="0" data-z="0" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="perfect-code">Perfect Code!!!</h1><pre class="highlight code go"><span class="kd">func</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="nx">re</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nx">MustCompile</span><span class="p">(</span><span class="s">`[^A-z]`</span><span class="p">)</span>
+  <span class="k">for</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">lineChannel</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="s">" "</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">wordChannel</span> <span class="o">&lt;-</span> <span class="nx">re</span><span class="p">.</span><span class="nx">ReplaceAllString</span><span class="p">(</span><span class="nx">word</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span> <span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">owg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="k">for</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">wordChannel</span> <span class="p">{</span>
+    <span class="nx">mutex</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
+    <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="p">=</span> <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="nx">mutex</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">wg</span><span class="p">,</span> <span class="nx">owg</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{},</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">mutex</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+  <span class="nx">workerCount</span> <span class="o">:=</span> <span class="mi">3</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="nx">workerCount</span><span class="p">)</span>
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="nx">workerCount</span><span class="p">)</span>
+  <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">workerCount</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+    <span class="k">go</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span><span class="p">)</span>
+    <span class="k">go</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">text</span><span class="p">,</span> <span class="s">"\n"</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">lineChannel</span> <span class="o">&lt;-</span> <span class="nx">line</span>
+  <span class="p">}</span>
+
+  <span class="nb">close</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="24" data-x="12000" data-y="0" data-z="0" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="some-suggestions">Some suggestions</h1><ul><li>Have a strong reasoning to use channel.</li><li>Start the workers first, before ingesting into channel.</li><li>Channels should always be buffered.<ul><li>Buffer value should be a multiple of readers on the channel.</li></ul></li><li>Channels should always be passed as either be readonly or writeonly.</li><li>Readonly Channels cannot be closed</li></ul></div><div class="step step-level-1 perfect" step="25" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="14000" data-y="0" data-z="0"><h1 id="slightly-better">Slightly better ?</h1><pre class="highlight code go"><span class="kd">func</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="kd">chan</span><span class="o">&lt;-</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="nx">re</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nx">MustCompile</span><span class="p">(</span><span class="s">`[^A-z]`</span><span class="p">)</span>
+  <span class="k">for</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">lineChannel</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="s">" "</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">wordChannel</span> <span class="o">&lt;-</span> <span class="nx">re</span><span class="p">.</span><span class="nx">ReplaceAllString</span><span class="p">(</span><span class="nx">word</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">owg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="k">for</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">wordChannel</span> <span class="p">{</span>
+    <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="p">=</span> <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">wg</span><span class="p">,</span> <span class="nx">owg</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{},</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">workerCount</span> <span class="o">:=</span> <span class="mi">3</span>
+  <span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">workerCount</span><span class="p">),</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">workerCount</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="nx">workerCount</span><span class="p">)</span>
+  <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">workerCount</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+    <span class="k">go</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="k">go</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">text</span><span class="p">,</span> <span class="s">"\n"</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">lineChannel</span> <span class="o">&lt;-</span> <span class="nx">line</span>
+  <span class="p">}</span>
+
+  <span class="nb">close</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="26" data-x="13940" data-y="170" data-z="-550" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="27" data-x="13940" data-y="-100" data-z="-550" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="28" data-x="14000" data-y="0" data-z="0" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="29" data-x="16000" data-y="0" data-z="0" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="select-channels">Select Channels</h1><ul><li>When you need to recieve data from multiple channels you can use <tt>select</tt></li></ul><pre class="highlight code go"><span class="k">select</span> <span class="p">{</span>
+  <span class="k">case</span> <span class="nx">c</span> <span class="o">&lt;-</span> <span class="nx">channel1</span><span class="p">:</span>
+    <span class="c1">// some stuff with c
+</span>  <span class="k">case</span> <span class="nx">d</span> <span class="o">&lt;-</span><span class="nx">channel2</span><span class="p">:</span>
+    <span class="c1">// some stuff with d
+</span>  <span class="p">}</span>
+<span class="p">}</span></pre><ul><li>Randomly chooses if data is ready on multiple channels</li></ul></div><div class="step step-level-1 super-perfect" step="30" data-rotate-x="-90" data-x="16000" data-y="0" data-z="-1000" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="super-duper-perfect"><strong>Super-Duper Perfect!!</strong></h1><pre class="highlight code go"><span class="kd">func</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="kd">chan</span><span class="o">&lt;-</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">done</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="nx">re</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nx">MustCompile</span><span class="p">(</span><span class="s">`[^A-z]`</span><span class="p">)</span>
+  <span class="k">for</span> <span class="p">{</span>
+    <span class="k">select</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nx">line</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">lineChannel</span><span class="p">:</span>
+      <span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+        <span class="k">return</span>
+      <span class="p">}</span>
+      <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="s">" "</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">wordChannel</span> <span class="o">&lt;-</span> <span class="nx">re</span><span class="p">.</span><span class="nx">ReplaceAllString</span><span class="p">(</span><span class="nx">word</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">done</span><span class="p">:</span>
+      <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">"wordGenerator quiting"</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">done</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="nx">owg</span><span class="p">.</span><span class="nx">Done</span><span class="p">()</span>
+  <span class="k">for</span> <span class="p">{</span>
+    <span class="k">select</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nx">word</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">wordChannel</span><span class="p">:</span>
+      <span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+        <span class="k">return</span>
+      <span class="p">}</span>
+      <span class="nx">time</span><span class="p">.</span><span class="nx">Sleep</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="p">)</span>
+      <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="p">=</span> <span class="nx">wordCountMap</span><span class="p">[</span><span class="nx">word</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">done</span><span class="p">:</span>
+      <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">"wordCounter quiting"</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">monitorInterrupt</span><span class="p">(</span><span class="nx">done</span> <span class="kd">chan</span><span class="o">&lt;-</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">sigs</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Signal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="nx">signal</span><span class="p">.</span><span class="nx">Notify</span><span class="p">(</span><span class="nx">sigs</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGINT</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGTERM</span><span class="p">)</span>
+
+  <span class="o">&lt;-</span><span class="nx">sigs</span>
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">"System interrupt quiting"</span><span class="p">)</span>
+  <span class="nb">close</span><span class="p">(</span><span class="nx">done</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">wordCountMap</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">wg</span><span class="p">,</span> <span class="nx">owg</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{},</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">workerCount</span> <span class="o">:=</span> <span class="mi">3</span>
+  <span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">workerCount</span><span class="p">),</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">workerCount</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+  <span class="nx">done</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">bool</span><span class="p">)</span>
+
+  <span class="k">go</span> <span class="nx">monitorInterrupt</span><span class="p">(</span><span class="nx">done</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="nx">workerCount</span><span class="p">)</span>
+  <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">workerCount</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+    <span class="k">go</span> <span class="nx">wordGenerator</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">,</span> <span class="nx">wordChannel</span><span class="p">,</span> <span class="nx">done</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Add</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="k">go</span> <span class="nx">wordCounter</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">,</span> <span class="nx">done</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">text</span><span class="p">,</span> <span class="s">"\n"</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">lineChannel</span> <span class="o">&lt;-</span> <span class="nx">line</span>
+  <span class="p">}</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">"loaded lines"</span><span class="p">)</span>
+
+  <span class="nb">close</span><span class="p">(</span><span class="nx">lineChannel</span><span class="p">)</span>
+  <span class="nx">wg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">"populated words"</span><span class="p">)</span>
+
+  <span class="nb">close</span><span class="p">(</span><span class="nx">wordChannel</span><span class="p">)</span>
+  <span class="nx">owg</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">wordCountMap</span><span class="p">)</span>
+<span class="p">}</span></pre></div><div class="step step-level-1" step="31" data-x="15800" data-y="-700" data-z="-1200" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="32" data-x="15800" data-y="-700" data-z="-1100" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="33" data-x="15800" data-y="-700" data-z="-850" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="34" data-x="15800" data-y="-700" data-z="-1000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="35" data-x="16000" data-y="0" data-z="-1000" data-rotate-x="-90" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="36" id="last_slide" data-rotate-x="0" data-x="16000" data-y="0" data-z="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"></div><div class="step step-level-1" step="37" data-x="8000" data-y="5000" data-z="15000" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1"><h1 id="thats-all-folks"><strong>Thats all folks!</strong></h1><h2 id="questions"><em>Questions?</em></h2></div></div><div id="hovercraft-help" class="hide"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Right, Down, Page Down</th><td>Next slide</td></tr><tr><th>Left, Up, Page Up</th><td>Previous slide</td></tr><tr><th>G</th><td>Go to slide number</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>

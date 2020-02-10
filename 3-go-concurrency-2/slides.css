@@ -1,0 +1,159 @@
+@import url(http://fonts.googleapis.com/css?family=Libre+Baskerville|Racing+Sans+One|Satisfy|Signika+Negative);
+
+body {
+  background-color:#333;
+  color: #fff;
+  font-size: 200%;
+  text-align: center;
+  font-family: Signika Negative;
+}
+
+.step {
+  padding: 20px;
+}
+
+.z-space p {
+  text-align: center;
+}
+
+.z-space em {
+  padding-left: 280px;
+}
+
+.z-space h1,
+.z-space h2,
+.z-space p {
+  color: #ffffff;
+}
+
+.pop-text h1 {
+  font-size: 135px;
+  color: #ffffff;
+  margin: 0 -400px 0 -400px;
+}
+
+p {
+  font-weight: normal;
+  margin-bottom: 0.3em;
+  margin-top: 0.3em;
+  text-align: left;
+}
+
+em {
+  font-family: Satisfy;
+  font-size: 142%;
+}
+
+strong {
+  font-family: Racing Sans One;
+  font-size: 127%;
+  letter-spacing: -2px;
+}
+
+pre {
+  text-align: left;
+  padding: 10px 10px 10px 40px
+}
+
+h1, h2, h3, h4 {
+  font-weight: normal;
+  margin-bottom: 0.3em;
+  margin-top: 0.3em;
+}
+
+pre {
+  font-size: 50% !important;
+  background-color: #302b2d;
+}
+
+.perfect pre {
+  font-size: 35% !important;
+}
+
+.super-perfect pre {
+  font-size: 6px !important;
+}
+
+tt {
+  background-color: #23232e;
+}
+
+tt, pre {
+  font-family: "Operator Mono Lig";
+}
+
+ul {
+  list-style-position: inside;
+}
+
+li {
+  font-weight: normal;
+  margin-bottom: 0.3em;
+  margin-top: 0.3em;
+  padding-left: 0.3em;
+  line-height: 1.1em;
+  font-size: 0.8em;
+  text-align: justify;
+  list-style-position: outside;
+}
+
+a {
+  text-decoration: underline;
+  color: #ccc;
+}
+
+.hidden {
+  display: none;
+}
+
+.header img {
+  opacity: 0.2;
+  width: 25%;
+  position: absolute;
+  left: 0;
+}
+
+.footer {
+  position: absolute;
+  top: 95%;
+  font-size: 50%;
+}
+
+
+figure > img {
+  filter: invert(80%) hue-rotate(270deg) saturate(4.0) drop-shadow(10px 10px 10px rgba(0,0,0,.4));
+}
+
+
+pre .c1 {
+  font-style: italic !important;
+  color: #888 !important;
+}
+
+pre .kd {
+  font-style: italic;
+  color: rgb(193, 140, 251) !important;
+}
+
+pre .nx {
+  font-style: bold;
+  color: rgb(250, 142, 201) !important;
+}
+
+pre .o,
+pre .p {
+  color: rgb(253, 220, 50) !important;
+}
+
+pre .k {
+  font-style: italic;
+}
+
+pre .k,
+pre .kt {
+  color: #fdb560 !important;
+}
+
+pre code {
+  color: rgb(163, 234, 251) !important;
+}
