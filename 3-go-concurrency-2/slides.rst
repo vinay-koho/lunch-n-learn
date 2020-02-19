@@ -191,6 +191,19 @@ First attempt
 :data-y: r500
 :data-z: r-150
 
+----
+
+:data-x: r2000
+:data-y: r0
+:data-z: r0
+
+Output
+======
+
+.. code-block:: go
+
+  map[]
+
 .. note::
 
   - Output :: empty map
@@ -198,7 +211,7 @@ First attempt
 
 ----
 
-:data-x: r0
+:data-x: r-2000
 :data-y: r0
 :data-z: r-1000
 
@@ -254,6 +267,32 @@ Second attempt
 :data-y: r550
 :data-z: r-100
 
+----
+
+:data-x: r2000
+:data-y: r0
+:data-z: r0
+
+Output
+======
+
+.. code-block:: go
+
+  fatal error: concurrent map writes
+  fatal error: concurrent map read and map write
+
+  goroutine 10 [running]:
+  runtime.throw(0x10ed09c, 0x15)
+    /Users/vinay/.gvm/gos/go1.11.4/src/runtime/panic.go:608 +0x72 fp=0xc00003e710...
+  runtime.mapassign_faststr(0x10cd5a0, 0xc0000701e0, 0xc0000b6068, 0x5, 0x11c2a60)
+    /Users/vinay/.gvm/gos/go1.11.4/src/runtime/map_faststr.go:199 +0x3da...
+  main.wordCounter(0xc0000581e0)
+    /Users/vinay/Workspace/lunch-n-learn/3-go-concurrency-2/test.go:31 +0xd9...
+  runtime.goexit()
+    /Users/vinay/.gvm/gos/go1.11.4/src/runtime/asm_amd64.s:1333 +0x1...
+  created by main.main
+    /Users/vinay/Workspace/lunch-n-learn/3-go-concurrency-2/test.go:45 +0xe5
+
 .. note::
 
   - Output :: Concurrent memory access error.
@@ -263,7 +302,7 @@ Second attempt
 
 ----
 
-:data-x: r0
+:data-x: r-2000
 :data-y: r0
 :data-z: r-1000
 
@@ -313,6 +352,27 @@ Third attempt
 :data-y: r600
 :data-z: r-100
 
+----
+
+:data-x: r2000
+:data-y: r0
+:data-z: r0
+
+Output
+======
+
+.. code-block:: go
+
+  fatal error: all goroutines are asleep - deadlock!
+
+  goroutine 1 [semacquire]:
+  sync.runtime_Semacquire(0x11c21c0)
+    /Users/vinay/.gvm/gos/go1.11.4/src/runtime/sema.go:56 +0x39
+  sync.(*WaitGroup).Wait(0x11c21b8)
+    /Users/vinay/.gvm/gos/go1.11.4/src/sync/waitgroup.go:130 +0x64
+  main.main()
+    /Users/vinay/Workspace/lunch-n-learn/3-go-concurrency-2/test.go:56 +0x1ae
+
 .. note::
 
   - Output :: all threads are sleep. Deadlock
@@ -321,7 +381,7 @@ Third attempt
 
 ----
 
-:data-x: r0
+:data-x: r-2000
 :data-y: r0
 :data-z: r-1000
 
